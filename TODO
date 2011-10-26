@@ -1,0 +1,6 @@
+TODO:
+-----
+
+ -- Add environment variable to supply project name, and override autodetection 
+ -- Write patch names to stdout, to look and feel exact as git-format-patch
+ -- Print help if run with "--help" or w/o paremeters

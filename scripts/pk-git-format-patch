@@ -1,0 +1,61 @@
+#!/usr/bin/python
+import sys
+import os
+from urlparse import urlsplit
+from subprocess import Popen, PIPE
+
+args = sys.argv[1:]
+
+
+def run_pipe(cmd):
+    pipe = Popen(cmd, stdout=PIPE)
+    stdout, stderr = pipe.communicate()
+    if pipe.returncode == 0:
+        return stdout.strip()
+    sys.stderr.write("run " + repr(cmd) + " failed\n")
+    sys.exit(pipe.returncode)
+
+origin = run_pipe(["git", "config", "--get", "remote.origin.url"])
+if origin.startswith("http"):
+    split = urlsplit(origin)
+    origin = os.path.basename(split.path)
+else:
+    if origin.startswith("git@github"):
+        origin = origin.rsplit(":")[1]
+    elif origin.startswith("gitolite@git"):
+        origin = origin.rsplit(":")[1]
+        base = os.path.basename(origin)
+        if base == "client" or base == "server":
+            origin = os.path.join(
+                os.path.basename(
+                    os.path.dirname(origin)),
+                    base)
+
+branch = run_pipe(["git", "symbolic-ref", "HEAD"])
+if branch.startswith("refs/heads/"):
+    branch = branch[len("refs/heads/"):]
+
+info = " | %(origin)s | %(branch)s" % locals()
+
+
+def enchance_subject(patchfile):
+    newname = patchfile + ".new"
+    oldfile = open(patchfile, 'r')
+    newfile = open(newname, "w")
+    double_dash = False
+    for line in oldfile.readlines():
+        if not double_dash:
+            if line.startswith("--"):
+                double_dash = True
+            elif line.startswith("Subject: "):
+                line = line.strip() + info + "\n"
+        newfile.write(line)
+    oldfile.close()
+    newfile.close()
+    os.unlink(patchfile)
+    os.rename(newname, patchfile)
+
+
+files = run_pipe(["git", "format-patch"] + args)
+for each in files.split("\n"):
+    enchance_subject(each)
