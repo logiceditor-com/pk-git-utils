@@ -2,4 +2,3 @@ TODO:
 -----
 
  -- Add environment variable to supply project name, and override autodetection 
- -- Print help if run with "--help" or w/o paremeters

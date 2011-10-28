@@ -5,9 +5,15 @@ from urlparse import urlsplit
 from subprocess import Popen, PIPE
 from email import message_from_file
 
-
 args = sys.argv[1:]
 
+# --help passed to git-format-patch and it's ok for us
+if len(args) == 0:
+    print "This tool mangle subject line in patches to conform our guidelines"
+    print
+    print "Refer to manual page on git-format-patch for options, because all"
+    print "of them will be passed to git-format-patch"
+    sys.exit(0)
 
 def run_pipe(cmd):
     pipe = Popen(cmd, stdout=PIPE)
