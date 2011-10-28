@@ -3,6 +3,8 @@ import sys
 import os
 from urlparse import urlsplit
 from subprocess import Popen, PIPE
+from email import message_from_file
+
 
 args = sys.argv[1:]
 
@@ -42,14 +44,9 @@ def enchance_subject(patchfile):
     newname = patchfile + ".new"
     oldfile = open(patchfile, 'r')
     newfile = open(newname, "w")
-    double_dash = False
-    for line in oldfile.readlines():
-        if not double_dash:
-            if line.startswith("--"):
-                double_dash = True
-            elif line.startswith("Subject: "):
-                line = line.strip() + info + "\n"
-        newfile.write(line)
+    msg = message_from_file(oldfile)
+    msg.replace_header("Subject",  msg["Subject"] + info)
+    newfile.write(msg.as_string())
     oldfile.close()
     newfile.close()
     os.unlink(patchfile)
