@@ -56,3 +56,4 @@ def enchance_subject(patchfile):
 files = run_pipe(["git", "format-patch"] + args)
 for each in files.split("\n"):
     enchance_subject(each)
+    print each  # print filenames to stdout, as original format-patch
