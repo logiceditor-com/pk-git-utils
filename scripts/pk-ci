@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#
+# upload current branch to CI gitlab
+#
+
+set -e
+
+MY_BRANCH=`git symbolic-ref HEAD --short`
+git push -f gitlab "${MY_BRANCH}:test"
+

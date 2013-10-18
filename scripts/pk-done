@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#
+# merge current into master
+#
+
+set -e
+
+MASTER=${1:-dev}
+MY_BRANCH=`git symbolic-ref HEAD --short`
+
+git checkout $MASTER
+git fetch origin $MASTER
+git reset --hard origin/$MASTER
+git merge --ff-only $MY_BRANCH
+git push origin $MASTER
+
+#git checkout $MY_BRANCH
+#or
+#git b -D $MY_BRANCH ; git push origin :$MY_BRANCH

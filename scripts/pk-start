@@ -1,0 +1,34 @@
+#!/bin/sh
+
+#
+# Create and checkout to new branch dedicated to redmine ticket $1
+# with short summary $2. Data is read from repo top-level file SUBJECT.
+# First line is ticket number, rest of lines are summary.
+# All non-alphanumeric symbols in $2 are replaced with underscores,
+# letters are lowercased.
+#
+
+#
+# add CI remote
+#
+git remote add gitlab gl:le/pk-ml
+
+set -e
+
+#
+# setup cosher hooks
+#
+rm -r .git/hooks
+ln -s ../etc/git/hooks/ .git/hooks
+
+#
+# create working branch
+#
+MASTER=${1:-dev}
+TICKET=`head -n 1 SUBJECT`
+SUMMARY=`sed 1d SUBJECT | tr -c '[:alnum:]' '_' | tr -s '_' | tr '[:upper:]' '[:lower:]' | sed 's/_*$//'`
+USER=`git config --get user.id`
+BRANCH="${USER}/${TICKET}/${SUMMARY}"
+
+echo "Creating branch ${BRANCH} off branch ${MASTER}"
+git checkout -b $BRANCH $MASTER

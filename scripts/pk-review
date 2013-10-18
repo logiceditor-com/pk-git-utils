@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# format patchset in current git repository
+#
+REDMINE=https://redmine-tmp.iphonestudio.ru/issues
+
+# form the patchset under ./reviews/ISSUE-NUMBER/CURRENT-DATE
+MASTER="${1:-dev}"
+PROJECT=`git config --get remote.origin.url | sed -r 's~(http|https|git)://[^/]+/~~;s~[^:]+:~~'`
+BRANCH=`git symbolic-ref HEAD --short`
+ISSUE=`echo $BRANCH | cut -f2 -d'/'`
+D=reviews/${ISSUE}/`date +%Y%m%d-%H%M%S`
+mkdir -p ${D} || exit 1
+git format-patch --no-binary -n --cover-letter -o "${D}" "${MASTER}"
+
+# prefill subject and blurb?
+SUMMARY=@@@SHORT-SUMMARY@@@
+CHANGES=@@@CHANGES-IN-THIS-VERSION-OF-PATCH@@@
+CI_URL=@@@CI-SUCCESS-URL-HERE@@@
+
+# remove excess From:
+sed -i -e "1d" ${D}/*.patch
+# merge broken headers
+sed -i -e '1,/^$/{/^ /{H;d;};/^$/a\\' -e 'x;/^$/d;s/\n//g}' ${D}/*.patch
+# append project/branch to subjects
+sed -i -r -e "s~^(Subject: .*)\$~\\1 | ${PROJECT} | ${BRANCH}~" ${D}/*.patch
+# patch revision text
+sed -i -e "s~\*\*\* SUBJECT HERE \*\*\*~${SUMMARY}~" ${D}/0000-cover-letter.patch
+sed -i -e "s~\*\*\* BLURB HERE \*\*\*~Ticket: ${REDMINE}/${ISSUE}\nv1:\n${CHANGES:-fixed}\n\nCI: ${CI_URL}~" ${D}/0000-cover-letter.patch
+
+# open cover letter for editing
+${EDITOR:-vi} ${D}/0000-cover-letter.patch

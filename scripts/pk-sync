@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#
+# rebase current branch against fresh master
+#
+
+set -e
+
+MASTER=${1:-dev}
+MY_BRANCH=`git symbolic-ref HEAD --short`
+
+git checkout $MASTER
+git fetch origin $MASTER
+git checkout $MY_BRANCH
+git rebase origin/$MASTER

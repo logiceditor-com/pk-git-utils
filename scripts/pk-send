@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# send *.patch from current directory to reviewing list
+#
+
+MAILLIST=logiceditor-com-review@googlegroups.com
+git send-email --to $MAILLIST *.patch
